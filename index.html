@@ -226,7 +226,7 @@ body{
 }
 .billet + .billet{margin-top:26px;}
 .billet__photo{margin:0;grid-row:1;}
-.billet__photo img{width:100%;height:100%;object-fit:cover;display:block;}
+.billet__photo img{width:100%;height:100%;object-fit:cover;display:block;object-position:58% 20%;}
 .billet__centre{padding:18px 18px 16px;min-width:0;}
 .surtitre{
   font-family:'Hanken Grotesk',sans-serif;
@@ -395,7 +395,8 @@ body{
 }
 @media (max-width:640px){
   .billet{grid-template-columns:1fr;}
-  .billet__photo{height:210px;border-bottom:var(--bordure) solid var(--noir);}
+  .billet__photo{height:230px;border-bottom:var(--bordure) solid var(--noir);}
+  .billet__photo img{object-position:52% 17%;}
   .billet__talon{
     border-left:0;
     border-top:3px dotted var(--noir);
