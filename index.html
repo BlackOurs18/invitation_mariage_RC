@@ -72,7 +72,7 @@ body{
 .entete{padding:44px 0 8px;text-align:center;}
 .entete h1,.entete .titre{
   font-family:'Poppins',sans-serif;
-  font-weight:400;
+  font-weight:700;
   font-size:clamp(28px,8.4vw,52px);
   line-height:1.12;
   letter-spacing:-.01em;
@@ -445,7 +445,7 @@ body{
 .conseils a{color:inherit;}
 /* ---------- Ticket qui se retourne (recto : soiree, verso : conseils) ----------
    Les deux faces sont empilees dans la meme case de grille : la carte prend
-   la hauteur de la plus grande. Chaque face change de visibilite a mi-course,
+   la hauteur de la plus grande. Chaque face change d'opacite a mi-course,
    quand la carte est vue par la tranche : la vitesse de rotation est
    symetrique pour que ce moment tombe pile a la moitie de la duree. Aucun
    element (boutons, reflets) de la face cachee ne transparait a l'envers. */
@@ -454,23 +454,34 @@ body{
   display:grid;
   transform-style:preserve-3d;
   transition:transform .9s cubic-bezier(.45,0,.55,1);
+  will-change:transform;
 }
 .retournement__carte > .billet{
   grid-area:1/1;
   -webkit-backface-visibility:hidden;
   backface-visibility:hidden;
-  transition:visibility 0s .45s;
+  /* chaque face a son propre calque, dessine des le chargement : la
+     premiere rotation est aussi fluide que les suivantes */
+  will-change:transform,opacity;
+  transition:opacity 0s .45s;
 }
 .retournement__carte > .billet--verso{
   margin-top:0;
   transform:rotateY(180deg);
-  visibility:hidden;
+  opacity:0;
+  pointer-events:none;
   grid-template-rows:1fr auto;
 }
 .retournement__carte > .billet--verso .conseils{align-self:center;}
 .retournement.est-retourne .retournement__carte{transform:rotateY(180deg);}
-.retournement.est-retourne .billet--recto{visibility:hidden;}
-.retournement.est-retourne .billet--verso{visibility:visible;}
+.retournement.est-retourne .billet--recto{opacity:0;pointer-events:none;}
+.retournement.est-retourne .billet--verso{opacity:1;pointer-events:auto;}
+/* Prechauffage au chargement, cache sous l'ecran d'accueil : la carte est
+   retournee un instant sans animation pour que le navigateur prepare les
+   deux faces avant le premier appui. */
+.prechauffe .retournement__carte,.prechauffe .retournement__carte > .billet{transition:none !important;animation:none !important;}
+.prechauffe:not(.prechauffe-fin) .retournement__carte{transform:rotateY(180deg);}
+.prechauffe:not(.prechauffe-fin) .retournement__carte > .billet{opacity:1;}
 .soiree .actions--centre{margin-top:16px;}
 /* Tant que personne n'a retourne le ticket, il se balance de temps en
    temps sur son axe, comme pour montrer qu'il a un dos. */
@@ -531,7 +542,7 @@ body{
   .accueil{display:none !important;}
   /* sur papier, recto et verso l'un sous l'autre */
   .retournement__carte{display:block;transform:none !important;animation:none !important;}
-  .retournement__carte > .billet{visibility:visible !important;transform:none !important;}
+  .retournement__carte > .billet{opacity:1 !important;transform:none !important;}
   .retournement__carte > .billet--verso{margin-top:26px;}
 }
 @media (prefers-reduced-motion:no-preference){
@@ -852,10 +863,31 @@ body{
   /* ----- Ticket de la soiree : un appui le retourne ----- */
   var carte = document.getElementById('retournement');
   var retourner = document.getElementById('bouton-retourner');
-  function basculer(){
+  var recto = carte.querySelector('.billet--recto');
+  var verso = carte.querySelector('.billet--verso');
+  verso.inert = true;
+
+  function apresImage(fn){ requestAnimationFrame(function(){ requestAnimationFrame(fn); }); }
+
+  /* prechauffage, pendant que l'ecran d'accueil couvre la page */
+  carte.classList.add('prechauffe');
+  apresImage(function(){
+    carte.classList.add('prechauffe-fin');
+    apresImage(function(){ carte.classList.remove('prechauffe', 'prechauffe-fin'); });
+  });
+
+  function tourner(){
     var retourne = carte.classList.toggle('est-retourne');
-    carte.classList.add('a-servi');
+    recto.inert = retourne;
+    verso.inert = !retourne;
     retourner.setAttribute('aria-pressed', retourne ? 'true' : 'false');
+  }
+  function basculer(){
+    if (carte.classList.contains('a-servi')){ tourner(); return; }
+    /* premier appui : le balancement s'arrete, la carte revient a plat,
+       puis elle tourne a partir d'une position nette */
+    carte.classList.add('a-servi');
+    apresImage(tourner);
   }
   retourner.addEventListener('click', basculer);
   carte.addEventListener('click', function(e){
