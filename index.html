@@ -215,7 +215,8 @@ body{
 /* Reflet qui traverse l'interieur du bouton : un mouvement lent et peu
    contraste attire l'oeil en vision peripherique sans gener la lecture.
    Les boutons passent par paires, un evenement apres l'autre (civile,
-   religieuse, gouter), puis une courte pause avant de recommencer.
+   religieuse, gouter) : chaque paire demarre avant la fin de la
+   precedente pour garder le mouvement continu, sans longue attente.
    Le reflet s'efface des que le bouton est survole ou au clavier. */
 .bouton{position:relative;overflow:hidden;isolation:isolate;}
 .bouton::after{
@@ -232,13 +233,13 @@ body{
     transparent 70%);
 }
 @media (prefers-reduced-motion:no-preference){
-  .bouton::after{animation:reflet 12s cubic-bezier(.45,0,.2,1) infinite;}
-  .ticket-bloc:nth-child(2) .bouton::after{animation-delay:3.5s;}
-  .ticket-bloc:nth-child(3) .bouton::after{animation-delay:7s;}
+  .bouton::after{animation:reflet 8s cubic-bezier(.45,0,.2,1) infinite;}
+  .ticket-bloc:nth-child(2) .bouton::after{animation-delay:2s;}
+  .ticket-bloc:nth-child(3) .bouton::after{animation-delay:4s;}
   .bouton:hover::after,.bouton:focus-visible::after{animation-play-state:paused;opacity:0;}
   @keyframes reflet{
     0%{transform:translateX(-130%);}
-    29.2%,100%{transform:translateX(130%);}
+    43.75%,100%{transform:translateX(130%);}
   }
 }
 .bouton:active{transform:translateY(1px);}
