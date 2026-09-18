@@ -315,6 +315,7 @@ body{
   white-space:nowrap;
 }
 .talon__codebarres{display:flex;align-items:center;gap:6px;}
+.codebarres-boite{display:block;}
 .talon__codebarres img{height:clamp(110px,26vw,170px);width:auto;display:block;}
 .billet__perfo{
   position:absolute;
@@ -413,6 +414,31 @@ body{
   .billet{grid-template-columns:1fr;}
   .billet__photo{height:230px;border-bottom:var(--bordure) solid var(--noir);}
   .billet__photo img{object-position:52% 17%;}
+  /* ticket de la soiree : le talon se lit a l'horizontale, centre */
+  .billet:not(.billet--verso) .billet__talon{justify-content:center;}
+  .billet:not(.billet--verso) .talon__codebarres{
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+  }
+  .billet:not(.billet--verso) .talon__etiquette{
+    writing-mode:horizontal-tb;
+    letter-spacing:.12em;
+    text-align:center;
+  }
+  .billet:not(.billet--verso) .codebarres-boite{
+    position:relative;
+    width:clamp(170px,58vw,240px);
+    height:54px;
+  }
+  .billet:not(.billet--verso) .talon__codebarres img{
+    position:absolute;
+    left:50%;
+    top:50%;
+    height:clamp(170px,58vw,240px);
+    width:auto;
+    transform:translate(-50%,-50%) rotate(90deg);
+  }
   .billet__talon{
     border-left:0;
     border-top:3px dotted var(--noir);
@@ -549,7 +575,7 @@ body{
       <div class="billet__talon">
         <div class="talon__codebarres">
           <span class="talon__etiquette">TICKET NUMBER : 1101200512092007</span>
-          <img src="assets/code-barres.svg" alt="" aria-hidden="true">
+          <span class="codebarres-boite"><img src="assets/code-barres.svg" alt="" aria-hidden="true"></span>
         </div>
       </div>
     </article>
