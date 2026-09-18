@@ -212,6 +212,34 @@ body{
 }
 .bouton:hover,.bouton:focus-visible{background:var(--noir);color:var(--creme);}
 .bouton svg{width:14px;height:14px;fill:currentColor;flex:0 0 auto;}
+/* Reflet qui traverse l'interieur du bouton : un mouvement lent et peu
+   contraste attire l'oeil en vision peripherique sans gener la lecture.
+   Les deux boutons sont decales pour eviter le clignotement synchrone,
+   et le reflet s'efface des que le bouton est survole ou au clavier. */
+.bouton{position:relative;overflow:hidden;isolation:isolate;}
+.bouton::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  transform:translateX(-130%);
+  background:linear-gradient(105deg,
+    transparent 32%,
+    rgba(16,15,13,.16) 47%,
+    rgba(16,15,13,.05) 56%,
+    transparent 70%);
+}
+@media (prefers-reduced-motion:no-preference){
+  .bouton::after{animation:reflet 5.2s cubic-bezier(.45,0,.2,1) infinite;}
+  .bouton + .bouton::after{animation-delay:1.7s;}
+  .bouton:hover::after,.bouton:focus-visible::after{animation-play-state:paused;opacity:0;}
+  @keyframes reflet{
+    0%{transform:translateX(-130%);}
+    34%,100%{transform:translateX(130%);}
+  }
+}
+.bouton:active{transform:translateY(1px);}
 
 /* ---------- Ticket de la soirée ---------- */
 .soiree{margin:64px 0 0;}
@@ -279,25 +307,12 @@ body{
   border-left:3px dotted var(--noir);
   margin:14px 0;
 }
-.talon__champ{
-  display:flex;
-  align-items:flex-end;
-  gap:6px;
-  height:100%;
-  padding-left:12px;
-}
 .talon__etiquette{
   writing-mode:vertical-rl;
   font-size:11px;
   letter-spacing:.18em;
   text-transform:uppercase;
   white-space:nowrap;
-}
-.talon__ligne{
-  width:2px;
-  align-self:stretch;
-  background:var(--noir);
-  min-height:96px;
 }
 .talon__codebarres{display:flex;align-items:center;gap:6px;}
 .talon__codebarres img{height:clamp(110px,26vw,170px);width:auto;display:block;}
@@ -310,25 +325,32 @@ body{
 /* le verso : talon a plat, plus lisible sur telephone */
 .billet--verso{grid-template-columns:1fr;}
 .billet--verso .billet__talon{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
   border-left:0;
   border-top:3px dotted var(--noir);
   margin:0 16px;
-  padding:14px 0 16px;
-  flex-wrap:wrap;
+  padding:16px 0 18px;
+}
+.billet--verso .talon__etiquette,.billet--verso .talon__valeur,.billet--verso .prix__valeur{writing-mode:horizontal-tb;}
+/* deux colonnes sans filet, chacune centree */
+.talon__colonne{
+  display:flex;
+  flex-direction:column;
   align-items:center;
-  gap:18px;
+  justify-content:center;
+  gap:7px;
+  text-align:center;
+  min-width:0;
 }
-.billet--verso .talon__champ{padding-left:0;flex:1 1 180px;align-items:center;height:auto;}
-.billet--verso .talon__etiquette,.billet--verso .prix__valeur{writing-mode:horizontal-tb;}
-.billet--verso .talon__ligne{
-  width:auto;
-  flex:1 1 90px;
-  height:2px;
-  min-height:0;
-  align-self:auto;
+.talon__valeur{
+  font-family:'Hanken Grotesk',sans-serif;
+  font-size:clamp(15px,4vw,19px);
+  letter-spacing:.08em;
+  white-space:nowrap;
 }
-.billet--verso .prix{padding:0;align-items:center;flex:0 0 auto;}
-.billet--verso .prix__valeur{font-size:clamp(18px,4.6vw,26px);}
+.billet--verso .prix__valeur{font-size:clamp(18px,4.8vw,26px);}
 .conseils{margin:0;}
 .conseils ul{
   margin:16px 0 0;
@@ -340,12 +362,6 @@ body{
 .conseils li{margin-bottom:10px;}
 .conseils li:last-child{margin-bottom:0;}
 .conseils a{color:inherit;}
-.prix{
-  display:flex;
-  align-items:flex-end;
-  gap:8px;
-  padding:14px 14px 14px 12px;
-}
 .prix__valeur{
   writing-mode:vertical-rl;
   font-family:'Archivo',sans-serif;
@@ -402,9 +418,8 @@ body{
     border-top:3px dotted var(--noir);
     margin:0 14px;
     padding:14px 0;
-    justify-content:space-between;
+    justify-content:center;
   }
-  .prix{padding-left:0;}
 }
 @media (max-width:420px){
   .ticket-bloc .actions{padding-left:0;}
@@ -532,10 +547,6 @@ body{
         </div>
       </div>
       <div class="billet__talon">
-        <div class="talon__champ">
-          <span class="talon__etiquette">PRÉNOM</span>
-          <span class="talon__ligne"></span>
-        </div>
         <div class="talon__codebarres">
           <span class="talon__etiquette">TICKET NUMBER : 1101200512092007</span>
           <img src="assets/code-barres.svg" alt="" aria-hidden="true">
@@ -557,16 +568,13 @@ body{
         </ul>
       </div>
       <div class="billet__talon">
-        <div class="talon__champ">
-          <span class="talon__etiquette">PRÉNOM</span>
-          <span class="talon__ligne"></span>
+        <div class="talon__colonne">
+          <span class="talon__etiquette">TICKET NUMBER</span>
+          <span class="talon__valeur">12032023</span>
         </div>
-        <div class="talon__champ">
-          <span class="talon__etiquette">TICKET NUMBER : 12032023</span>
-        </div>
-        <div class="prix">
-          <span class="talon__etiquette">TICKET PRICE :</span>
-          <span class="prix__valeur">KE DU LOVE</span>
+        <div class="talon__colonne">
+          <span class="talon__etiquette">TICKET PRICE</span>
+          <span class="prix__valeur">KE DU LOVE$</span>
         </div>
       </div>
     </article>
